@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventario del Hogar</title>
+  <style>
+    :root{
+      --bg:#f6f4ef;
+      --card:#fcfbf8;
+      --card-2:#f3efe7;
+      --text:#1f2a1f;
+      --muted:#6d766d;
+      --line:#e5dfd5;
+      --green:#2f6b3d;
+      --green-2:#5d8f62;
+      --green-soft:#dfeedd;
+      --red:#d94a48;
+      --yellow:#d79a1e;
+      --shadow:0 8px 24px rgba(30,40,30,.08);
+      --radius:20px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .app{
+      max-width:1200px;
+      margin:0 auto;
+      padding:24px;
+    }
+
+    .hero{
+      background:linear-gradient(135deg, #245a30 0%, #3d7a47 45%, #7ca76c 100%);
+      color:white;
+      border-radius:28px;
+      padding:28px;
+      box-shadow:var(--shadow);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+    }
+
+    .hero-left{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+
+    .logo{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:rgba(255,255,255,.15);
+      display:grid;
+      place-items:center;
+      font-size:22px;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:2rem;
+      line-height:1.1;
+    }
+
+    .hero p{
+      margin:6px 0 0;
+      color:rgba(255,255,255,.9);
+    }
+
+    .shop-btn{
+      border:none;
+      background:rgba(255,255,255,.18);
+      color:white;
+      border-radius:18px;
+      padding:14px 18px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      position:relative;
+    }
+
+    .badge-count{
+      position:absolute;
+      top:-8px;
+      right:-8px;
+      width:24px;
+      height:24px;
+      border-radius:999px;
+      background:#f0ab18;
+      color:#222;
+      font-size:.8rem;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:16px;
+      margin-top:20px;
+    }
+
+    .stat-card, .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .stat-card{
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .stat-icon{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      font-size:20px;
+      background:var(--green-soft);
+    }
+
+    .stat-card.low .stat-icon{background:#fde7e7}
+    .stat-card.out .stat-icon{background:#f7f1d9}
+
+    .stat-info small{
+      display:block;
+      color:var(--muted);
+      font-weight:600;
+      margin-bottom:4px;
+    }
+
+    .stat-info strong{
+      font-size:1.8rem;
+      line-height:1;
+    }
+
+    .section{
+      margin-top:18px;
+    }
+
+    .panel{
+      padding:20px;
+    }
+
+    .panel-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .panel-title{
+      font-size:1.8rem;
+      margin:0;
+    }
+
+    .outline-btn, .solid-btn{
+      border:none;
+      border-radius:16px;
+      padding:12px 16px;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    .outline-btn{
+      background:#eef5ea;
+      color:var(--green);
+      border:1px solid #d8e6d0;
+    }
+
+    .solid-btn{
+      background:#9ab28e;
+      color:white;
+      min-width:120px;
+    }
+
+    .solid-btn:hover{filter:brightness(.96)}
+    .outline-btn:hover{filter:brightness(.98)}
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+
+    .chip{
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      background:#f1ece3;
+      color:#6a5e4b;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .chip.active{
+      background:#dfeedd;
+      color:var(--green);
+    }
+
+    .add-form{
+      display:grid;
+      grid-template-columns: 1.8fr 1fr .7fr .5fr auto;
+      gap:12px;
+    }
+
+    .field, select{
+      width:100%;
+      border:1px solid var(--line);
+      background:#fbfaf7;
+      border-radius:16px;
+      padding:14px 16px;
+      outline:none;
+      font-size:1rem;
+    }
+
+    .field:focus, select:focus{
+      border-color:#adc8a7;
+      box-shadow:0 0 0 4px rgba(120, 170, 120, .12);
+    }
+
+    .toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .tab{
+      border:none;
+      background:transparent;
+      padding:10px 8px;
+      font-weight:700;
+      color:#516051;
+      cursor:pointer;
+      border-bottom:3px solid transparent;
+    }
+
+    .tab.active{
+      color:var(--green);
+      border-color:var(--green);
+    }
+
+    .search{
+      min-width:220px;
+      max-width:300px;
+      width:100%;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+      border-radius:16px;
+      background:white;
+    }
+
+    thead th{
+      text-align:left;
+      font-size:.85rem;
+      color:#7f877f;
+      padding:14px 12px;
+      border-bottom:1px solid var(--line);
+    }
+
+    tbody td{
+      padding:16px 12px;
+      border-bottom:1px solid #eee7dc;
+      vertical-align:middle;
+    }
+
+    tbody tr:hover{
+      background:#fbfaf6;
+    }
+
+    .category-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#dfe4ff;
+      color:#4e5b95;
+      font-weight:700;
+      font-size:.92rem;
+    }
+
+    .qty-controls{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .qty-btn{
+      width:32px;
+      height:32px;
+      border:none;
+      border-radius:10px;
+      background:#edf0e8;
+      color:#526052;
+      font-size:1.1rem;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .qty-number{
+      min-width:20px;
+      text-align:center;
+      font-weight:800;
+      color:#8a5a2b;
+    }
+
+    .row-actions{
+      display:flex;
+      gap:8px;
+    }
+
+    .icon-btn{
+      width:34px;
+      height:34px;
+      border:none;
+      border-radius:10px;
+      background:#f4f1ea;
+      cursor:pointer;
+      font-size:1rem;
+    }
+
+    .icon-btn:hover, .qty-btn:hover{
+      filter:brightness(.97);
+    }
+
+    .footer-note{
+      text-align:center;
+      color:#707870;
+      margin-top:14px;
+      font-size:.95rem;
+    }
+
+    .empty{
+      text-align:center;
+      color:var(--muted);
+      padding:28px 10px;
+    }
+
+    dialog{
+      border:none;
+      border-radius:22px;
+      padding:0;
+      width:min(480px, calc(100% - 24px));
+      box-shadow:0 20px 60px rgba(0,0,0,.18);
+    }
+
+    dialog::backdrop{
+      background:rgba(0,0,0,.35);
+    }
+
+    .modal{
+      padding:22px;
+      background:var(--card);
+    }
+
+    .modal h3{
+      margin:0 0 14px;
+      font-size:1.4rem;
+    }
+
+    .modal-grid{
+      display:grid;
+      gap:12px;
+    }
+
+    .modal-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:18px;
+    }
+
+    @media (max-width: 920px){
+      .stats{grid-template-columns: repeat(2, 1fr);}
+      .add-form{grid-template-columns: 1fr 1fr;}
+      .add-form .field.name{grid-column:1/-1;}
+    }
+
+    @media (max-width: 640px){
+      .app{padding:14px}
+      .hero{
+        padding:20px;
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .stats{grid-template-columns:1fr;}
+      .add-form{grid-template-columns:1fr;}
+      .toolbar{align-items:stretch}
+      .search{max-width:none}
+      table{display:block; overflow-x:auto;}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <div class="hero-left">
+        <div class="logo">📦</div>
+        <div>
+          <h1>Inventario del Hogar</h1>
+          <p>Control total de tus artículos</p>
+        </div>
+      </div>
+      <button class="shop-btn">
+        🛒 Compras
+        <span class="badge-count" id="shoppingCount">0</span>
+      </button>
+    </header>
+
+    <section class="stats">
+      <article class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <small>Total artículos</small>
+          <strong id="totalArticulos">0</strong>
+        </div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-icon">🗂️</div>
+        <div class="stat-info">
+          <small>Categorías</small>
+          <strong id="totalCategorias">0</strong>
+        </div>
+      </article>
+
+      <article class="stat-card low">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-info">
+          <small>Stock bajo</small>
+          <strong id="stockBajo">0</strong>
+        </div>
+      </article>
+
+      <article class="stat-card out">
+        <div class="stat-icon">🧾</div>
+        <div class="stat-info">
+          <small>Sin stock</small>
+          <strong id="sinStock">0</strong>
+        </div>
+      </article>
+    </section>
+
+    <section class="section panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Categorías</h2>
+        <button class="outline-btn" id="openCategoryModal">➕ Nueva</button>
+      </div>
+      <div class="chips" id="categoryChips"></div>
+    </section>
+
+    <section class="section panel">
+      <div class="panel-header" style="margin-bottom:14px">
+        <h2 class="panel-title">Agregar artículo</h2>
+      </div>
+
+      <form class="add-form" id="itemForm">
+        <input class="field name" id="itemName" type="text" placeholder="Nombre del artículo..." required />
+        <select id="itemCategory"></select>
+        <select id="itemUnit">
+          <option value="un">un</option>
+          <option value="kg">kg</option>
+          <option value="lt">lt</option>
+          <option value="paq">paq</option>
+          <option value="rol">rol</option>
+          <option value="bot">bot</option>
+        </select>
+        <input class="field" id="itemQty" type="number" min="0" value="1" required />
+        <button class="solid-btn" type="submit">＋ Agregar</button>
+      </form>
+    </section>
+
+    <section class="section panel">
+      <div class="toolbar">
+        <div class="tabs" id="tabs"></div>
+        <input class="field search" id="searchInput" type="text" placeholder="🔍 Buscar..." />
+      </div>
+
+      <div id="tableContainer"></div>
+      <div class="footer-note" id="footerNote"></div>
+    </section>
+  </div>
+
+  <dialog id="categoryDialog">
+    <div class="modal">
+      <h3>Nueva categoría</h3>
+      <div class="modal-grid">
+        <input class="field" id="newCategoryName" type="text" placeholder="Ej: Ferretería" />
+        <input class="field" id="newCategoryEmoji" type="text" placeholder="Emoji, ej: 🔧" maxlength="2" />
+      </div>
+      <div class="modal-actions">
+        <button class="outline-btn" id="closeCategoryModal">Cancelar</button>
+        <button class="solid-btn" id="saveCategory">Guardar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="editDialog">
+    <div class="modal">
+      <h3>Editar artículo</h3>
+      <div class="modal-grid">
+        <input class="field" id="editName" type="text" />
+        <select id="editCategory"></select>
+        <select id="editUnit">
+          <option value="un">un</option>
+          <option value="kg">kg</option>
+          <option value="lt">lt</option>
+          <option value="paq">paq</option>
+          <option value="rol">rol</option>
+          <option value="bot">bot</option>
+        </select>
+        <input class="field" id="editQty" type="number" min="0" />
+      </div>
+      <div class="modal-actions">
+        <button class="outline-btn" id="cancelEdit">Cancelar</button>
+        <button class="solid-btn" id="saveEdit">Guardar cambios</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const categories = [
+      { id: 1, name: "Comida", emoji: "🍎", color: "#f7e4df", text: "#aa5d52" },
+      { id: 2, name: "Aseo", emoji: "🧼", color: "#dde7ff", text: "#5172b8" },
+      { id: 3, name: "Mascotas", emoji: "🐾", color: "#f1e5bf", text: "#8d6a1f" },
+      { id: 4, name: "Medicinas", emoji: "💊", color: "#f7dcdc", text: "#b7485f" },
+      { id: 5, name: "Bebidas", emoji: "🥤", color: "#e4f0da", text: "#4e8a45" },
+      { id: 6, name: "Limpieza", emoji: "🧹", color: "#eee3fb", text: "#8661b2" }
+    ];
+
+    const items = [
+      { id: 1, name: "Shampoo", categoryId: 2, unit: "un", qty: 1 },
+      { id: 2, name: "Papel higiénico", categoryId: 2, unit: "rol", qty: 8 }
+    ];
+
+    let currentTab = "all";
+    let searchTerm = "";
+    let editingId = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function getCategory(id){
+      return categories.find(c => c.id === id);
+    }
+
+    function renderCategoryOptions(selectId){
+      const select = $(selectId);
+      select.innerHTML = categories.map(c => `
+        <option value="${c.id}">${c.emoji} ${c.name}</option>
+      `).join("");
+    }
+
+    function renderCategoryChips(){
+      $("categoryChips").innerHTML = categories.map(c => {
+        const count = items.filter(i => i.categoryId === c.id).length;
+        return `
+          <button class="chip ${currentTab === c.id ? 'active' : ''}" onclick="setTab(${c.id})">
+            <span>${c.emoji} ${c.name}</span>
+            <span>${count}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderTabs(){
+      const allBtn = `
+        <button class="tab ${currentTab === 'all' ? 'active' : ''}" onclick="setTab('all')">Todos</button>
+      `;
+
+      const catBtns = categories.map(c => `
+        <button class="tab ${currentTab === c.id ? 'active' : ''}" onclick="setTab(${c.id})">
+          ${c.emoji} ${c.name}
+        </button>
+      `).join("");
+
+      $("tabs").innerHTML = allBtn + catBtns;
+    }
+
+    function getFilteredItems(){
+      return items.filter(item => {
+        const byTab = currentTab === "all" ? true : item.categoryId === currentTab;
+        const bySearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+        return byTab && bySearch;
+      });
+    }
+
+    function renderTable(){
+      const filtered = getFilteredItems();
+
+      if(filtered.length === 0){
+        $("tableContainer").innerHTML = `<div class="empty">No hay artículos en esta vista.</div>`;
+        updateFooter();
+        return;
+      }
+
+      $("tableContainer").innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ARTÍCULO</th>
+              <th>CATEGORÍA</th>
+              <th>UNIDAD</th>
+              <th>CANTIDAD</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map(item => {
+              const cat = getCategory(item.categoryId);
+              return `
+                <tr>
+                  <td><strong>${item.name}</strong></td>
+                  <td>
+                    <span class="category-badge" style="background:${cat.color}; color:${cat.text}">
+                      ${cat.emoji} ${cat.name}
+                    </span>
+                  </td>
+                  <td>${item.unit}</td>
+                  <td>
+                    <div class="qty-controls">
+                      <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+                      <span class="qty-number">${item.qty}</span>
+                      <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="icon-btn" onclick="openEdit(${item.id})">✏️</button>
+                      <button class="icon-btn" onclick="removeItem(${item.id})">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      `;
+
+      updateFooter();
+    }
+
+    function updateFooter(){
+      $("footerNote").textContent = `${items.length} artículos · ${categories.length} categorías`;
+    }
+
+    function renderStats(){
+      $("totalArticulos").textContent = items.length;
+      $("totalCategorias").textContent = categories.length;
+      $("stockBajo").textContent = items.filter(i => i.qty > 0 && i.qty <= 2).length;
+      $("sinStock").textContent = items.filter(i => i.qty === 0).length;
+      $("shoppingCount").textContent = items.filter(i => i.qty === 0).length;
+    }
+
+    function refreshAll(){
+      renderCategoryOptions("itemCategory");
+      renderCategoryOptions("editCategory");
+      renderCategoryChips();
+      renderTabs();
+      renderTable();
+      renderStats();
+    }
+
+    function setTab(tab){
+      currentTab = tab;
+      refreshAll();
+    }
+
+    function changeQty(id, amount){
+      const item = items.find(i => i.id === id);
+      if(!item) return;
+      item.qty = Math.max(0, item.qty + amount);
+      refreshAll();
+    }
+
+    function removeItem(id){
+      const index = items.findIndex(i => i.id === id);
+      if(index >= 0){
+        items.splice(index, 1);
+        refreshAll();
+      }
+    }
+
+    function openEdit(id){
+      const item = items.find(i => i.id === id);
+      if(!item) return;
+      editingId = id;
+      $("editName").value = item.name;
+      $("editCategory").value = item.categoryId;
+      $("editUnit").value = item.unit;
+      $("editQty").value = item.qty;
+      $("editDialog").showModal();
+    }
+
+    $("itemForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const name = $("itemName").value.trim();
+      const categoryId = Number($("itemCategory").value);
+      const unit = $("itemUnit").value;
+      const qty = Number($("itemQty").value);
+
+      if(!name) return;
+
+      items.push({
+        id: Date.now(),
+        name,
+        categoryId,
+        unit,
+        qty: Math.max(0, qty)
+      });
+
+      $("itemForm").reset();
+      $("itemQty").value = 1;
+      renderCategoryOptions("itemCategory");
+      refreshAll();
+    });
+
+    $("searchInput").addEventListener("input", (e) => {
+      searchTerm = e.target.value;
+      renderTable();
+    });
+
+    $("openCategoryModal").addEventListener("click", () => {
+      $("categoryDialog").showModal();
+    });
+
+    $("closeCategoryModal").addEventListener("click", () => {
+      $("categoryDialog").close();
+    });
+
+    $("saveCategory").addEventListener("click", () => {
+      const name = $("newCategoryName").value.trim();
+      const emoji = $("newCategoryEmoji").value.trim() || "📁";
+
+      if(!name) return;
+
+      categories.push({
+        id: Date.now(),
+        name,
+        emoji,
+        color: "#ece8df",
+        text: "#6c6357"
+      });
+
+      $("newCategoryName").value = "";
+      $("newCategoryEmoji").value = "";
+      $("categoryDialog").close();
+      refreshAll();
+    });
+
+    $("cancelEdit").addEventListener("click", () => {
+      $("editDialog").close();
+    });
+
+    $("saveEdit").addEventListener("click", () => {
+      const item = items.find(i => i.id === editingId);
+      if(!item) return;
+
+      item.name = $("editName").value.trim();
+      item.categoryId = Number($("editCategory").value);
+      item.unit = $("editUnit").value;
+      item.qty = Math.max(0, Number($("editQty").value));
+
+      $("editDialog").close();
+      refreshAll();
+    });
+
+    refreshAll();
+
+    window.setTab = setTab;
+    window.changeQty = changeQty;
+    window.removeItem = removeItem;
+    window.openEdit = openEdit;
+  </script>
+</body>
+</html>
